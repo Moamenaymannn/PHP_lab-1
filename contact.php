@@ -1,16 +1,32 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $first_name = $_POST["first_name"];
-    $last_name = $_POST["last_name"];
-    $address = $_POST["address"] ;
-    $country = $_POST["country"] ;
-    $gender = $_POST["gender"] ;
-    $username = $_POST["username"];
-    $department = $_POST["department"];
-    
-    // skills as an array
-    $skills = isset($_POST["skills"]) ? implode(", ", $_POST["skills"]) : "No skills selected";
+
+$file_path = "data.txt";
+$contacts = [];
+
+if (file_exists($file_path)) {
+    $file = fopen($file_path, "r");
+    while (($line = fgets($file)) !== false) {
+        $data = explode("|", trim($line));
+        if (!empty($data)) { 
+            $contacts[] = [
+                "id" => $data[0] ?? "N/A",
+                "first_name" => $data[1] ?? "N/A",
+                "last_name" => $data[2] ?? "N/A",
+                "address" => $data[3] ?? "N/A",
+                "country" => $data[4] ?? "N/A",
+                "gender" => $data[5] ?? "N/A",
+                "skills" => $data[6] ?? "N/A",
+                "username" => $data[7] ?? "N/A",
+                "department" => $data[8] ?? "N/A"
+            ];
+        }
+    }
+    fclose($file);
+} else {
+    echo "<h2 class='text-center text-danger mt-5'>No registered user data found.</h2>";
+    exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -41,6 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <table class="table table-bordered table-striped text-center">
             <thead class="table-dark">
                 <tr>
+                    <th>ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Address</th>
@@ -49,21 +66,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <th>Skills</th>
                     <th>Username</th>
                     <th>Department</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><?php echo $first_name; ?></td>
-                    <td><?php echo $last_name; ?></td>
-                    <td><?php echo $address; ?></td>
-                    <td><?php echo $country; ?></td>
-                    <td><?php echo $gender; ?></td>
-                    <td><?php echo $skills; ?></td>
-                    <td><?php echo $username; ?></td>
-                    <td><?php echo $department; ?></td>
-                </tr>
+                <?php if (!empty($contacts)) : ?>
+                    <?php foreach ($contacts as $contact) : ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($contact["id"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["first_name"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["last_name"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["address"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["country"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["gender"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["skills"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["username"]); ?></td>
+                            <td><?php echo htmlspecialchars($contact["department"]); ?></td>
+                            <td>
+                                <form action="delete.php" method="POST">
+                                    <input type="hidden" name="id" value="<?php echo $contact["id"]; ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <tr>
+                        <td colspan="9" class="text-center text-danger">No registered users found.</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
+
+        
+        <div class="text-center mt-4">
+            <a href="register.php" class="btn btn-primary"> Back to Register</a>
+        </div>
+
     </div>
 </div>
 
